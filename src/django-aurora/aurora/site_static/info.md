@@ -1,0 +1,1 @@
+directory as a namespace 

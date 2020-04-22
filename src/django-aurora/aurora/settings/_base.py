@@ -11,21 +11,50 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import sys
+import json
+from django.core.exceptions import ImproperlyConfigured
+from aurora.apps.core.versioning import get_git_changeset_timestamp
+from django.utils.translation import gettext_lazy as _
+
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+
+EXTERNAL_BASE = os.path.join(BASE_DIR, "externals")
+EXTERNAL_LIBS_PATH = os.path.join(EXTERNAL_BASE, "libs")
+EXTERNAL_APPS_PATH = os.path.join(EXTERNAL_BASE, "apps")
+sys.path = ["", EXTERNAL_LIBS_PATH, EXTERNAL_APPS_PATH] + sys.path
+
+
+with open(os.path.join(os.path.dirname(__file__), "secrets.json"), "r") as f:
+    secrets = json.loads(f.read())
+
+
+def get_secret(setting):
+    """Get the secret variable or return explicit exception."""
+    try:
+        return secrets[setting]
+    except KeyError:
+        error_msg = f"Set the {setting} secret variable"
+        raise ImproperlyConfigured(error_msg)
 
 
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
+# See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'w52wnv_dua0w9xa@gg(0$%phvqzu-u8o3js)62pxo89s(_jgth'
+SECRET_KEY = get_secret("DJANGO_SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don"t run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "0.0.0.0",
+]
 
 
 # Application definition
@@ -37,6 +66,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # own
+    'aurora.apps.core',
 ]
 
 MIDDLEWARE = [
@@ -75,10 +106,14 @@ WSGI_APPLICATION = 'aurora.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': get_secret('DATABASE_NAME'),
+        'USER': get_secret('DATABASE_USER'),
+        'PASSWORD': get_secret('DATABASE_PASSWORD'),
+        'HOST': 'localhost',
     }
 }
+
 
 
 # Password validation
@@ -114,7 +149,20 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_URL = '/static/'
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/2.2/howto/static-files/
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "aurora", "site_static"),
+]
+
+timestamp = get_git_changeset_timestamp(BASE_DIR)
+
+STATIC_URL = f"/static/{timestamp}/"
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
