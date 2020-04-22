@@ -53,4 +53,4 @@ python-django-project
 │       ├── static/
 │       ├── LICENSE
 │       └── manage.py*
-└── venv/
+└── env/
