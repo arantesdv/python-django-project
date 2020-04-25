@@ -14,7 +14,6 @@ import os
 import sys
 import json
 from django.core.exceptions import ImproperlyConfigured
-from aurora.apps.core.versioning import get_git_changeset_timestamp
 from django.utils.translation import gettext_lazy as _
 
 
@@ -66,9 +65,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'imagekit',
+    'crispy_forms',
     # own
     'aurora.apps.core',
+    'aurora.apps.accounts',
 ]
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -85,7 +89,7 @@ ROOT_URLCONF = 'aurora.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, "aurora", "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -152,17 +156,14 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-timestamp = get_git_changeset_timestamp(BASE_DIR)
 
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "aurora", "site_static"),
 ]
-with open(os.path.join(BASE_DIR, 'aurora', 'settings', 'last-update.txt'), 'r') as f:
-    timestamp = f.readline().strip()
 
 
-STATIC_URL = f"/static/{timestamp}/"
+STATIC_URL = f"/static/"
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 

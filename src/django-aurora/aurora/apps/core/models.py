@@ -100,13 +100,8 @@ class MetaTagsBase(models.Model):
         max_length=255,
         blank=True,
     )
-    meta_author = models.CharField(
-        _("Author"),
-        max_length=255,
-        blank=True,
-    )
-    meta_copyright = models.CharField(
-        _("Copyright"),
+    meta_observation = models.CharField(
+        _("Observation"),
         max_length=255,
         blank=True,
     )
